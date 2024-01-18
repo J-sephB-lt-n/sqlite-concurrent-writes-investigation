@@ -9,11 +9,13 @@ import argparse
 from collections import defaultdict
 import concurrent.futures
 import json
+import logging
 import random
 import sqlite3
 import string
 import time
 from typing import Iterator
+
 
 RELEASE_YEAR_MIN: int = 1990
 RELEASE_YEAR_MAX: int = 2024
@@ -27,6 +29,10 @@ GENRES: tuple[str, ...] = (
     "trivia",
     "educational",
 )
+
+# set up python logger #
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -60,7 +66,8 @@ if args.read:
 def call_db(actions: list[str]) -> str:
     """Makea random read/write on the database"""
     chosen_action: str = random.choice(actions)
-    print(chosen_action[0], end="")
+    # print(chosen_action[0], end="")
+    logger.info(chosen_action)
     try:
         sql = sqlite3.connect("database.db")
 
@@ -76,10 +83,11 @@ def call_db(actions: list[str]) -> str:
             )
             sql_cursor.execute(
                 f"""
-    SELECT * FROM games 
-    WHERE release_year {random.choice([">=","<="])} ? 
-    AND name LIKE ? 
-    AND genre IN ({", ".join(["?"]*len(required_genres))})
+    SELECT  * 
+    FROM    games 
+    WHERE   release_year {random.choice([">=","<="])} ? 
+    AND     name LIKE ? 
+    AND     genre IN ({", ".join(["?"]*len(required_genres))})
     """,
                 #     """,
                 (
